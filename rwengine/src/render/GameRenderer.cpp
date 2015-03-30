@@ -100,9 +100,10 @@ GameRenderer::GameRenderer(Logger* log, GameWorld* engine)
 
 	glGenVertexArrays( 1, &vao );
 	
+	/* Framebuffering */
 	glGenFramebuffers(1, &framebufferName);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferName);
-	glGenTextures(2, fbTextures);
+	glGenTextures(numFbTextures, fbTextures);
 	
 	glBindTexture(GL_TEXTURE_2D, fbTextures[0]);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);

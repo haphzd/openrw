@@ -89,6 +89,8 @@ class GameRenderer
 	GLuint fbRenderBuffers[1];
 	Renderer::ShaderProgram* postProg;
 
+	static constexpr uint8_t numFbTextures = sizeof(fbTextures) / sizeof(fbTextures[0]);
+
 public:
 	
 	GameRenderer(Logger* log, GameWorld*);
