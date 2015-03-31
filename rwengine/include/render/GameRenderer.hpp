@@ -85,7 +85,7 @@ class GameRenderer
 	ViewCamera _camera;
 	
 	GLuint framebufferName;
-	GLuint fbTextures[2];
+	GLuint fbTextures[3];
 	GLuint fbRenderBuffers[1];
 	Renderer::ShaderProgram* postProg;
 

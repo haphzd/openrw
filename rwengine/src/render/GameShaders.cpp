@@ -334,6 +334,7 @@ in vec2 TexCoords;
 
 uniform sampler2D colour;
 uniform sampler2D data;
+uniform sampler2D normal;
 
 out vec4 outColour;
 
