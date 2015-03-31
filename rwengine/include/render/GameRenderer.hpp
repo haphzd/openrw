@@ -91,6 +91,8 @@ class GameRenderer
 
 	static constexpr uint8_t numFbTextures = sizeof(fbTextures) / sizeof(fbTextures[0]);
 
+	void defineFramebufferTextures(int w, int h);
+
 public:
 	
 	GameRenderer(Logger* log, GameWorld*);

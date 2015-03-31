@@ -104,19 +104,8 @@ GameRenderer::GameRenderer(Logger* log, GameWorld* engine)
 	glGenFramebuffers(1, &framebufferName);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferName);
 	glGenTextures(numFbTextures, fbTextures);
-	
-	glBindTexture(GL_TEXTURE_2D, fbTextures[0]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	
-	glBindTexture(GL_TEXTURE_2D, fbTextures[1]);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, 128, 128, 0, GL_RED, GL_FLOAT, NULL);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbTextures[0], 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, fbTextures[1], 0);
+	defineFramebufferTextures(128, 128);
 	
 	// Give water renderer the data texture
 	water.setDataTexture(1, fbTextures[1]);
@@ -220,6 +209,22 @@ GameRenderer::GameRenderer(Logger* log, GameWorld* engine)
 GameRenderer::~GameRenderer()
 {
 	glDeleteFramebuffers(1, &framebufferName);
+}
+
+void GameRenderer::defineFramebufferTextures(int w, int h)
+{
+	glBindTexture(GL_TEXTURE_2D, fbTextures[0]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glBindTexture(GL_TEXTURE_2D, fbTextures[1]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, w, h, 0, GL_RED, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbTextures[0], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, fbTextures[1], 0);
 }
 
 float mix(uint8_t a, uint8_t b, float num)
@@ -1141,10 +1146,7 @@ void GameRenderer::setViewport(int w, int h)
 	{
 		renderer->setViewport({w, h});
 		
-		glBindTexture(GL_TEXTURE_2D, fbTextures[0]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-		glBindTexture(GL_TEXTURE_2D, fbTextures[1]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_R16F, w, h, 0, GL_RED, GL_FLOAT, NULL);
+		defineFramebufferTextures(w, h);
 		
 		glBindRenderbuffer(GL_RENDERBUFFER, fbRenderBuffers[0]);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w, h);
