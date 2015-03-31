@@ -249,6 +249,11 @@ void GameRenderer::renderWorld(const ViewCamera &camera, float alpha)
 	const glm::ivec2& vp = getRenderer()->getViewport();
 	glViewport(0, 0, vp.x, vp.y);
 	glBindFramebuffer(GL_FRAMEBUFFER, framebufferName);
+	GLenum buffers[] {
+		GL_COLOR_ATTACHMENT0,
+		GL_COLOR_ATTACHMENT2,
+	};
+	glDrawBuffers(2, buffers);
 	glClear(GL_DEPTH_BUFFER_BIT);
 
 	glBindVertexArray( vao );
