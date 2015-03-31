@@ -336,6 +336,8 @@ const char* DefaultPostProcess::FragmentShader = R"(
 #version 130
 in vec2 TexCoords;
 
+uniform vec3 sunDirection;
+
 uniform sampler2D colour;
 uniform sampler2D data;
 uniform sampler2D normal;

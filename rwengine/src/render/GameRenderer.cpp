@@ -484,6 +484,8 @@ void GameRenderer::renderWorld(const ViewCamera &camera, float alpha)
 	renderer->setUniformTexture(postProg, "data", 1);
 	renderer->setUniformTexture(postProg, "normal", 2);
 
+	renderer->setUniform(postProg, "sunDirection", - sunDirection);
+
 	Renderer::DrawParameters wdp;
 	wdp.start = 0;
 	wdp.count = ssRectGeom.getCount();
