@@ -157,7 +157,7 @@ layout(location = 0) in vec3 position;
 layout(location = 1) in vec3 normal;
 layout(location = 2) in vec4 _colour;
 layout(location = 3) in vec2 texCoords;
-out vec3 Normal;
+out vec3 Normal_WorldSpace;
 out vec2 TexCoords;
 out vec4 Colour;
 out vec3 WorldSpace;
@@ -183,7 +183,8 @@ layout(std140) uniform ObjectData {
 
 void main()
 {
-	Normal = normal;
+	Normal_WorldSpace = mat3(model) * normal;
+
 	TexCoords = texCoords;
 	Colour = _colour;
 	vec4 worldspace = model * vec4(position, 1.0);
@@ -197,7 +198,7 @@ const char* WorldObject::FragmentShader = R"(
 #version 130
 #extension GL_ARB_uniform_buffer_object : enable
 #extension GL_ARB_explicit_attrib_location : enable
-in vec3 Normal;
+in vec3 Normal_WorldSpace;
 in vec2 TexCoords;
 in vec4 Colour;
 in vec3 WorldSpace;
@@ -241,7 +242,7 @@ void main()
 	vec4 diffuseC = vec4(colour.rgb * tmp, c.a * colour.a);
 	vec2 cscale = vec2(1.0, visibility);
 	fragOut = cscale.xxxy *	(fogfac * fogColor + (1.0-fogfac) * diffuseC);
-	normalOut = vec4(Normal, 1);
+	normalOut = vec4(Normal_WorldSpace, 1.0);
 })";
 
 const char* Particle::FragmentShader = R"(
