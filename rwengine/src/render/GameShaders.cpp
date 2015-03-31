@@ -196,12 +196,14 @@ void main()
 const char* WorldObject::FragmentShader = R"(
 #version 130
 #extension GL_ARB_uniform_buffer_object : enable
+#extension GL_ARB_explicit_attrib_location : enable
 in vec3 Normal;
 in vec2 TexCoords;
 in vec4 Colour;
 in vec3 WorldSpace;
 uniform sampler2D texture;
-out vec4 fragOut;
+layout(location = 0) out vec4 fragOut;
+layout(location = 1) out vec4 normalOut;
 
 layout(std140) uniform SceneData {
 	mat4 projection;
@@ -239,6 +241,7 @@ void main()
 	vec4 diffuseC = vec4(colour.rgb * tmp, c.a * colour.a);
 	vec2 cscale = vec2(1.0, visibility);
 	fragOut = cscale.xxxy *	(fogfac * fogColor + (1.0-fogfac) * diffuseC);
+	normalOut = vec4(Normal, 1);
 })";
 
 const char* Particle::FragmentShader = R"(
