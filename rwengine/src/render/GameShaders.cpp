@@ -347,12 +347,14 @@ out vec4 outColour;
 void main()
 {
 	vec4 Colour = texture2D(colour, TexCoords);
+	vec4 Ambient = vec4(0.1, 0.15, 0.2, 1);
 	vec3 Normal = texture2D(normal, TexCoords).xyz;
 
 	float cos_theta = clamp(dot(Normal, sunDirection), 0.0, 1.0);
 
 	outColour =
-		Colour * cos_theta
+		Colour * Ambient
+		+ Colour * cos_theta
 	;
 })";
 
