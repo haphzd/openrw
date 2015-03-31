@@ -341,11 +341,14 @@ uniform vec3 sunDirection;
 uniform sampler2D colour;
 uniform sampler2D data;
 uniform sampler2D normal;
+uniform sampler2D depth;
 
 out vec4 outColour;
 
 void main()
 {
+	float Depth = texture(depth, TexCoords).r * 2 - 1;
+
 	vec4 Colour = texture2D(colour, TexCoords);
 	vec4 Ambient = vec4(0.1, 0.15, 0.2, 1);
 	vec3 Normal = texture2D(normal, TexCoords).xyz;

@@ -228,9 +228,15 @@ void GameRenderer::defineFramebufferTextures(int w, int h)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	glBindTexture(GL_TEXTURE_2D, fbTextures[3]);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, w, h, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbTextures[0], 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, fbTextures[1], 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, fbTextures[2], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, fbTextures[3], 0);
 }
 
 float mix(uint8_t a, uint8_t b, float num)
@@ -483,6 +489,7 @@ void GameRenderer::renderWorld(const ViewCamera &camera, float alpha)
 	renderer->setUniformTexture(postProg, "colour", 0);
 	renderer->setUniformTexture(postProg, "data", 1);
 	renderer->setUniformTexture(postProg, "normal", 2);
+	renderer->setUniformTexture(postProg, "depth", 3);
 
 	renderer->setUniform(postProg, "sunDirection", - sunDirection);
 
