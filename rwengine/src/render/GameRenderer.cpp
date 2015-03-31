@@ -469,12 +469,21 @@ void GameRenderer::renderWorld(const ViewCamera &camera, float alpha)
 	if( (engine->state.isCinematic || engine->state.currentCutscene ) && splashTexName == 0 ) {
 		renderLetterbox();
 	}
-	
+
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	
 	renderer->useProgram(postProg);
-	
+
+	for (uint8_t i = 0; i < numFbTextures; ++i) {
+		glActiveTexture(GL_TEXTURE0 + i);
+		glBindTexture(GL_TEXTURE_2D, fbTextures[i]);
+	}
+	glActiveTexture(GL_TEXTURE0);
+	renderer->setUniformTexture(postProg, "colour", 0);
+	renderer->setUniformTexture(postProg, "data", 1);
+	renderer->setUniformTexture(postProg, "normal", 2);
+
 	Renderer::DrawParameters wdp;
 	wdp.start = 0;
 	wdp.count = ssRectGeom.getCount();
