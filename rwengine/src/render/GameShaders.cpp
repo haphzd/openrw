@@ -343,6 +343,8 @@ uniform sampler2D data;
 uniform sampler2D normal;
 uniform sampler2D depth;
 
+uniform vec3 cameraPosition;
+
 out vec4 outColour;
 
 void main()

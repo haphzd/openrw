@@ -492,6 +492,7 @@ void GameRenderer::renderWorld(const ViewCamera &camera, float alpha)
 	renderer->setUniformTexture(postProg, "depth", 3);
 
 	renderer->setUniform(postProg, "sunDirection", - sunDirection);
+	renderer->setUniform(postProg, "cameraPosition", _camera.position);
 
 	Renderer::DrawParameters wdp;
 	wdp.start = 0;
