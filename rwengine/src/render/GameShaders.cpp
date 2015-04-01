@@ -344,6 +344,8 @@ uniform sampler2D normal;
 uniform sampler2D depth;
 
 uniform vec3 cameraPosition;
+uniform mat4 viewInverse;
+uniform mat4 projInverse;
 
 out vec4 outColour;
 

@@ -493,6 +493,8 @@ void GameRenderer::renderWorld(const ViewCamera &camera, float alpha)
 
 	renderer->setUniform(postProg, "sunDirection", - sunDirection);
 	renderer->setUniform(postProg, "cameraPosition", _camera.position);
+	renderer->setUniform(postProg, "viewInverse", glm::inverse(view));
+	renderer->setUniform(postProg, "projInverse", glm::inverse(proj));
 
 	Renderer::DrawParameters wdp;
 	wdp.start = 0;
