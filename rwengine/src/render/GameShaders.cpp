@@ -349,6 +349,8 @@ uniform mat4 projInverse;
 
 out vec4 outColour;
 
+vec3 getWorldPositionFromDepth(float depth);
+
 void main()
 {
 	float Depth = texture(depth, TexCoords).r * 2 - 1;
@@ -363,6 +365,15 @@ void main()
 		Colour * Ambient
 		+ Colour * cos_theta
 	;
+}
+
+vec3 getWorldPositionFromDepth(float depth)
+{
+	vec4 projectedPosition = vec4(TexCoords.xy*2-1, depth, 1);
+	vec4 Position = viewInverse * projInverse * projectedPosition;
+	Position.xyz /= Position.w;
+
+	return Position.xyz;
 })";
 
 }
