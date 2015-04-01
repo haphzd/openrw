@@ -355,15 +355,23 @@ void main()
 {
 	float Depth = texture(depth, TexCoords).r * 2 - 1;
 
-	vec4 Colour = texture2D(colour, TexCoords);
-	vec4 Ambient = vec4(0.1, 0.15, 0.2, 1);
+	vec3 Position = getWorldPositionFromDepth(Depth);
 	vec3 Normal = texture2D(normal, TexCoords).xyz;
 
+	vec4 Colour = texture2D(colour, TexCoords);
+	vec4 Ambient = vec4(0.1, 0.15, 0.2, 1);
+
 	float cos_theta = clamp(dot(Normal, sunDirection), 0.0, 1.0);
+
+	// Specular
+	vec3 cameraDirection = normalize(cameraPosition - Position);
+	vec3 lightReflected = reflect(-sunDirection, Normal);
+	float cosSpecular = clamp(dot(cameraDirection, lightReflected), 0.0, 1.0);
 
 	outColour =
 		Colour * Ambient
 		+ Colour * cos_theta
+		+ pow(cosSpecular, 50)
 	;
 }
 
