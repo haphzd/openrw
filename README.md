@@ -1,4 +1,6 @@
-# OpenRW
+# OpenRW 
+
+[![Build Status](https://travis-ci.org/rwengine/openrw.svg?branch=master)](https://travis-ci.org/rwengine/openrw)
 
 OpenRW is an open source re-implementation of Rockstar Games' Grand Theft Auto III,
 a classic 3D action game first published in 2001.
@@ -9,6 +11,10 @@ Check out the [FAQ](https://github.com/rwengine/openrw/wiki/FAQ) and the rest of
 
 OpenRW requires a legitimate copy of the original PC game data in order to run.
 Without this data it will not be possible to run OpenRW.
+
+## Screenshots
+![Staunton Skyline from Portland](https://cloud.githubusercontent.com/assets/418211/16287457/1a434b7e-38db-11e6-9814-79a926a66071.png)
+![Opening cutscene](https://cloud.githubusercontent.com/assets/418211/16287461/1cc53f38-38db-11e6-9f26-196a516798d4.png)
 
 ## Getting Started
 
@@ -36,10 +42,10 @@ MAD is licensed under the GNU General Public License
 
 * http://www.underbit.com/products/mad/
 
-SFML is licensed under the zlib license
-
-* http://www.sfml-dev.org/license.php
-
 Bullet Physics is licensed under the zlib license
 
 * http://bulletphysics.org/mediawiki-1.5.8/index.php/LICENSE
+
+SDL 2.0 is licensed under the zlib license
+
+* https://www.libsdl.org/license.php

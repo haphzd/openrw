@@ -402,9 +402,58 @@ void game_create_garage(const ScriptArguments& args)
 	args.getWorld()->state->garages.push_back({
 		min, max, garageType
 	});
+	int garageIndex = args.getWorld()->state->garages.size() - 1;
 	
-	// TODO actually store the garage information and return the handle
-	*args[7].globalInteger = args.getWorld()->state->garages.size()-1;
+	*args[7].globalInteger = garageIndex;
+}
+
+bool game_is_car_inside_garage(const ScriptArguments& args)
+{
+	/// @todo move to garage code
+
+	GameWorld* gw = args.getWorld();
+	const auto& garages = gw->state->garages;
+	int garageIndex = args[0].integerValue();
+
+	RW_CHECK(garageIndex >= 0, "Garage index too low");
+	RW_CHECK(garageIndex < static_cast<int>(garages.size()), "Garage index too high");
+	const auto& garage = garages[garageIndex];
+
+	for(auto& v : gw->vehiclePool.objects) {
+		// @todo if this car only accepts mission cars we probably have to filter here / only check for one specific car
+		auto vp = v.second->getPosition();
+		if (vp.x >= garage.min.x && vp.y >= garage.min.y && vp.z >= garage.min.z &&
+		    vp.x <= garage.max.x && vp.y <= garage.max.y && vp.z <= garage.max.z) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool game_garage_contains_car(const ScriptArguments& args)
+{
+	/// @todo move to garage code
+
+	GameWorld* gw = args.getWorld();
+	const auto& garages = gw->state->garages;
+	int garageIndex = args[0].integerValue();
+
+	RW_CHECK(garageIndex >= 0, "Garage index too low");
+	RW_CHECK(garageIndex < static_cast<int>(garages.size()), "Garage index too high");
+	const auto& garage = garages[garageIndex];
+
+	auto vehicle = static_cast<VehicleObject*>(args.getObject<VehicleObject>(1));
+	if (vehicle) {
+		/// @todo if this car only accepts mission cars we probably have to filter here / only check for one specific car
+		auto vp = vehicle->getPosition();
+		if(vp.x >= garage.min.x && vp.y >= garage.min.y && vp.z >= garage.min.z &&
+		   vp.x <= garage.max.x && vp.y <= garage.max.y && vp.z <= garage.max.z) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void game_disable_ped_paths(const ScriptArguments& args)
@@ -565,6 +614,41 @@ void game_add_sprite_blip(const ScriptArguments& args)
 	*args[4].globalInteger = args.getWorld()->state->addRadarBlip(bd);
 }
 
+template <class Tobject>
+void game_add_object_sprite_blip(const ScriptArguments& args)
+{
+	BlipData data;
+	auto target = args.getObject<Tobject>(0);
+	data.target = target->getGameObjectID();
+	unsigned int sprite = args[1].integerValue();
+
+	// Look up the sprite ID.
+	std::string spriteName = "";
+	if ( sprite < sizeof( sprite_names ) )
+	{
+		spriteName = sprite_names[sprite];
+	}
+
+	switch(target->type()) {
+	case GameObject::Vehicle:
+		data.type = BlipData::Vehicle;
+		break;
+	case GameObject::Character:
+		data.type = BlipData::Character;
+		break;
+	case GameObject::Pickup:
+		data.type = BlipData::Pickup;
+		break;
+	default:
+		data.type = BlipData::Location;
+		RW_ERROR("Unhandled blip type");
+		break;
+	}
+
+	data.texture = spriteName;
+	*args[2].globalInteger = args.getWorld()->state->addRadarBlip(data);
+}
+
 void game_load_cutscene(const ScriptArguments& args)
 {
 	args.getWorld()->loadCutscene(args[0].string);
@@ -664,6 +748,33 @@ void game_set_head_animation(const ScriptArguments& args)
 	}
 }
 
+void game_create_crusher_crane(const ScriptArguments& args)
+{
+	glm::vec2 crane_location(args[0].real, args[1].real);
+	glm::vec2 park_min(args[2].real, args[3].real);
+	glm::vec2 park_max(args[4].real, args[5].real);
+	glm::vec3 crusher_position(args[6].real, args[7].real, args[8].real);
+	float crusher_heading = args[9].real;
+
+	RW_UNIMPLEMENTED("create_crusher_crane is incomplete");
+	/// @todo check how to store all parameters and how to create the actual crusher
+	RW_UNUSED(crane_location);
+	RW_UNUSED(crusher_position);
+	/// @todo check how the savegame stores the heading value etc.
+	RW_UNUSED(crusher_heading);
+
+	// NOTE: These values come from a savegame from the original game
+	glm::vec3 min(park_min, -1.f);
+	glm::vec3 max(park_max, 3.5f);
+	int garageType = GarageInfo::GARAGE_CRUSHER;
+
+	// NOTE: This instruction also creates or controls a garage
+	/// @todo find out if this creates a garage or if it just controls garage[0]
+	args.getWorld()->state->garages.push_back({
+		min, max, garageType
+	});
+}
+
 void game_increment_progress(const ScriptArguments& args)
 {
 	args.getWorld()->state->currentProgress += args[0].integer;
@@ -699,6 +810,29 @@ void game_set_zone_ped_group(const ScriptArguments& args)
 			it->second.pedGroupNight = args[2].integer;
 		}
 	}
+}
+
+bool game_has_respray_happened(const ScriptArguments& args)
+{
+	const auto& garages = args.getWorld()->state->garages;
+	int garageIndex = args[0].integerValue();
+
+	RW_CHECK(garageIndex >= 0, "Garage index too low");
+	RW_CHECK(garageIndex < static_cast<int>(garages.size()), "Garage index too high");
+	const auto& garage = garages[garageIndex];
+
+	if (garage.type != GarageInfo::GARAGE_RESPRAY) {
+		return false;
+	}
+
+	auto playerobj = args.getWorld()->pedestrianPool.find(args.getState()->playerObject);
+	auto pp = playerobj->getPosition();
+	if (pp.x >= garage.min.x && pp.y >= garage.min.y && pp.z >= garage.min.z &&
+	    pp.x <= garage.max.x && pp.y <= garage.max.y && pp.z <= garage.max.z) {
+		return true;
+	}
+
+	return false;
 }
 
 void game_display_text(const ScriptArguments& args)
@@ -822,6 +956,32 @@ bool game_is_audio_finished(const ScriptArguments& args)
 	return isFinished;
 }
 
+bool game_import_garage_contains_needed_car(const ScriptArguments& args)
+{
+	const auto& garages = args.getWorld()->state->garages;
+
+	int garageIndex = args[0].integerValue();
+	RW_CHECK(garageIndex >= 0, "Garage index too low");
+	RW_CHECK(garageIndex < static_cast<int>(garages.size()), "Garage index too high");
+	const auto& garage = garages[garageIndex];
+
+	int entryIndex = args[1].integerValue();
+	RW_CHECK(entryIndex >= 0, "Entry index too low");
+	RW_CHECK(entryIndex < 32, "Entry index too high");
+
+	if (garage.type == GarageInfo::GARAGE_COLLECTCARS1) {
+		return args.getState()->importExportPortland[entryIndex];
+	}
+	if (garage.type == GarageInfo::GARAGE_COLLECTCARS2) {
+		return args.getState()->importExportShoreside[entryIndex];
+	}
+	if (garage.type == GarageInfo::GARAGE_COLLECTCARS3) {
+		return args.getState()->importExportUnused[entryIndex];
+	}
+
+	return false;
+}
+
 void game_play_music_id(const ScriptArguments& args)
 {
 	int id = args[0].integer;
@@ -839,6 +999,43 @@ void game_play_music_id(const ScriptArguments& args)
 	else if (args.getWorld()->missionAudio.length() > 0)
 	{
 		args.getWorld()->sound.playSound(args.getWorld()->missionAudio);
+	}
+}
+
+void game_clear_area(const ScriptArguments& args)
+{
+	glm::vec3 position(args[0].real, args[1].real, args[2].real);
+	float radius = args[3].real;
+	bool clearParticles = args[4].integer;
+
+	GameWorld* gw = args.getWorld();
+
+	for(auto& v : gw->vehiclePool.objects)
+	{
+		if( glm::distance(position, v.second->getPosition()) < radius )
+		{
+			gw->destroyObjectQueued(v.second);
+		}
+	}
+
+	for(auto& p : gw->pedestrianPool.objects)
+	{
+		// Hack: Not sure what other objects are exempt from this opcode
+		if (p.second->getLifetime() == GameObject::PlayerLifetime) {
+			continue;
+		}
+		if( glm::distance(position, p.second->getPosition()) < radius )
+		{
+			gw->destroyObjectQueued(p.second);
+		}
+	}
+
+	/// @todo Do we also have to clear all projectiles + particles *in this area*, even if the bool is false?
+
+	if (clearParticles)
+	{
+		RW_UNUSED(clearParticles);
+		RW_UNIMPLEMENTED("game_clear_area(): should clear all particles and projectiles (not limited to area!)");
 	}
 }
 
@@ -876,6 +1073,13 @@ void game_display_help(const ScriptArguments& args)
 void game_clear_help(const ScriptArguments& args)
 {
 	args.getWorld()->state->text.clear<ScreenTextType::Help>();
+}
+
+bool game_has_crane_collected_all_cars(const ScriptArguments& args)
+{
+	RW_UNUSED(args);
+	RW_UNIMPLEMENTED("game_has_crane_collected_all_cars()");
+	return false;
 }
 
 bool game_can_player_move(const ScriptArguments& args)
@@ -1038,6 +1242,9 @@ GameModule::GameModule()
 
 	bindFunction(0x0219, game_create_garage, 8, "Create Garage" );
 
+	bindUnimplemented( 0x021B, game_set_target_car_for_mission_garage, 2, "Set Target Car for Mission Garage" );
+	bindFunction(0x021C, game_is_car_inside_garage, 1, "Is Car Inside Garage" );
+
 	bindFunction(0x022A, game_disable_ped_paths, 6, "Disable ped paths" );
 	bindFunction(0x022B, game_enable_ped_paths, 6, "Disable ped paths" );
 
@@ -1095,6 +1302,8 @@ GameModule::GameModule()
 	bindFunction(0x02F4, game_create_cutscene_head, 3, "Create Cutscene Actor Head" );
 	bindFunction(0x02F5, game_set_head_animation, 2, "Set Cutscene Head Animation" );
 
+	bindFunction(0x02FB, game_create_crusher_crane, 10, "Create Crusher Crane");
+
 	bindFunction(0x030C, game_increment_progress, 1, "Increment Progress" );
 	bindFunction(0x030D, game_set_max_progress, 1, "Set Max Progress" );
 
@@ -1106,8 +1315,9 @@ GameModule::GameModule()
 	bindFunction(0x0324, game_set_zone_ped_group, 3, "Set zone ped group" );
 	bindUnimplemented( 0x0325, game_create_car_fire, 2, "Create Car Fire" );
 
-	bindUnimplemented( 0x032B, game_create_weapon_pickup, 7, "Create Weapon Pickup" );
+	bindFunction( 0x0329, game_has_respray_happened, 1, "Has Respray Happened" );
 
+	bindUnimplemented( 0x0335, game_free_resprays, 1, "Set Free Respray" );
 	bindUnimplemented( 0x0336, game_set_character_visible, 2, "Set Player Visible" );
 
 	bindFunction(0x033E, game_display_text, 3, "Display Text" );
@@ -1133,7 +1343,7 @@ GameModule::GameModule()
 	bindUnimplemented( 0x038B, game_load_models_now, 0, "Load Requested Models Now" );
 	
 	bindFunction(0x0394, game_play_music_id, 1, "Play music");
-	bindUnimplemented( 0x0395, game_clear_area, 5, "Clear Area Vehicles and Pedestrians" );
+	bindFunction(0x0395, game_clear_area, 5, "Clear Area Vehicles and Pedestrians" );
 	
 	bindUnimplemented( 0x0397, game_set_vehicle_siren, 2, "Set Vehicle Siren" );
 	
@@ -1142,7 +1352,7 @@ GameModule::GameModule()
 	bindUnimplemented( 0x039D, game_scatter_particles, 12, "Scatter Particles" );
 	bindUnimplemented( 0x039E, game_set_character_hijackable, 2, "Set Character can be dragged out" );
 
-	bindUnimplemented( 0x03AD, game_set_garage_enabled, 1, "Set Garbage Enabled" );
+	bindUnimplemented( 0x03AD, game_set_rubbish_enabled, 1, "Set Rubbish Enabled" );
 	bindUnimplemented( 0x03AE, game_clear_area_particles, 6, "Remove Particles in Area" );
 	bindUnimplemented( 0x03AF, game_set_streaming_enabled, 1, "Set Map Streaming Enabled" );
 
@@ -1168,12 +1378,14 @@ GameModule::GameModule()
 	bindFunction(0x03D1, game_play_mission_audio, 0, "Play Mission Audio" );
 	bindFunction(0x03D2, game_is_audio_finished, 0, "Is Mission Audio Finished" );
 	
+	bindFunction(0x03D4, game_import_garage_contains_needed_car, 2, "Import Garage Contains Needed Car" );
 	bindFunction(0x03D5, game_clear_print, 1, "Clear This Print" );
 	bindUnimplemented( 0x03D6, game_clear_this_print, 1, "Clear This Big Print" );
 	bindFunction(0x03D9, game_did_game_save, 0, "Did game save" );
 	bindUnimplemented( 0x03DA, game_set_garage_follow_player, 1, "Set Garage Camera Follows Player" );
 	
 	bindFunction(0x03DC, game_add_object_blip<PickupObject>, 2, "Add blip for pickup");
+	bindFunction(0x03DD, game_add_object_sprite_blip<PickupObject>, 3, "Add Sprite Blip for Pickup");
 	
 	bindUnimplemented( 0x03DE, game_set_pedestrian_density, 1, "Set Pedestrian density" );
 
@@ -1184,6 +1396,7 @@ GameModule::GameModule()
 	bindUnimplemented( 0x03E7, game_flash_hud, 1, "Flash HUD Item" );
 	
 	bindUnimplemented( 0x03EB, game_clear_prints, 0, "Clear Small Prints" );
+	bindFunction(0x03EC, game_has_crane_collected_all_cars, 0, "Has Crane Collected All Cars" );
 
 	bindFunction(0x03EE, game_can_player_move, 1, "Can Player Move" );
 	bindUnimplemented( 0x03EF, game_safe_player, 1, "Make Player Safe For Cutscene" );
@@ -1206,6 +1419,7 @@ GameModule::GameModule()
 	bindUnimplemented( 0x041E, game_set_radio, 2, "Set Radio Station" );
 
 	bindUnimplemented( 0x0421, game_force_rain, 1, "Force Rain" );
+	bindFunction( 0x0422, game_garage_contains_car, 2, "Garage Contains Car" );
 
 	bindUnimplemented( 0x0426, game_create_level_transition, 6, "Create Save Cars Between Levels cube" );
 	

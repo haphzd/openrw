@@ -21,6 +21,7 @@ option(BUILD_SCRIPT_TOOL "Build script decompiler tool")
 # Compile-time Options & Features
 option(ENABLE_SCRIPT_DEBUG "Enable verbose script execution")
 option(ENABLE_PROFILING "Enable detailed profiling metrics")
+option(TESTS_NODATA "Build tests for no-data testing")
 
 #
 # Build configuration
@@ -67,13 +68,15 @@ ENDIF()
 find_package(OpenGL REQUIRED)
 find_package(OpenAL REQUIRED)
 find_package(Bullet REQUIRED)
-find_package(SFML 2 COMPONENTS system window graphics network REQUIRED)
 find_package(MAD REQUIRED)
 find_package(GLM REQUIRED)
 find_package(LibSndFile REQUIRED)
+find_package(SDL2 REQUIRED)
 
-include_directories("${GLM_INCLUDE_DIRS}")
-
+include_directories(
+	${SDL2_INCLUDE_DIR}
+	${GLM_INCLUDE_DIRS}
+)
 
 # External-internal dependencies
 add_subdirectory(cmake/external)
@@ -95,3 +98,18 @@ ENDIF()
 IF(${BUILD_TESTS})
 	add_subdirectory(tests)
 ENDIF()
+
+#
+# Finally
+#
+
+# Copy License file to install directory
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux|FreeBSD")
+	install(FILES COPYING
+			DESTINATION share/openrw
+			)
+endif()
+# And copy to build directory for CI
+file(COPY COPYING
+	 DESTINATION .
+	 )

@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <string>
+#include <bitset>
 #include <map>
 #include <vector>
 #include <objects/ObjectTypes.hpp>
@@ -245,7 +246,7 @@ struct GarageInfo
 		GARAGE_COLLECTCARS3 = 10, /* Unused */
 		GARAGE_OPENFOREXIT = 11,
 		GARAGE_INVALID2  = 12,
-		GARAGE_CRUSHER = 13, /* Unused */
+		GARAGE_CRUSHER = 13,
 		GARAGE_MISSION_KEEPCAR = 14,
 		GARAGE_FOR_SCRIPT = 15,
 		GARAGE_HIDEOUT_ONE = 16, /* Portland */
@@ -346,6 +347,13 @@ struct GameState
 	std::map<int, BlipData> radarBlips;
 
 	std::vector<GarageInfo> garages;
+
+	/**
+	 * Bitsets for the car import / export list mission
+	 */
+	std::bitset<32> importExportPortland;
+	std::bitset<32> importExportShoreside;
+	std::bitset<32> importExportUnused;
 
 	/**
 	 * World to use for this state, this isn't saved, just used at runtime

@@ -5,6 +5,7 @@
 #include <rw/types.hpp>
 #include <gl/DrawBuffer.hpp>
 #include <gl/GeometryBuffer.hpp>
+#include <glm/vec2.hpp>
 
 typedef uint64_t RenderKey;
 

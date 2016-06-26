@@ -16,10 +16,6 @@ void MenuState::enterMainMenu()
 {
 	Menu *m = new Menu(2);
 	m->offset = glm::vec2(200.f, 200.f);
-	m->addEntry(Menu::lambda("Resume", [=] {
-		StateManager::get().enter(new IngameState(game, false));
-		game->loadGame("quicksave");
-	}));
 	m->addEntry(Menu::lambda("Start", [=] { StateManager::get().enter(new IngameState(game)); }));
 	m->addEntry(Menu::lambda("Load Game", [=] { enterLoadMenu(); }));
 	m->addEntry(Menu::lambda("Test", [=] { StateManager::get().enter(new IngameState(game, true, "test")); }));
@@ -53,7 +49,7 @@ void MenuState::enterLoadMenu()
 
 void MenuState::enter()
 {
-	game->getWindow().setMouseCursorVisible(true);
+	getWindow().showCursor();
 }
 
 void MenuState::exit()
@@ -66,12 +62,12 @@ void MenuState::tick(float dt)
 
 }
 
-void MenuState::handleEvent(const sf::Event &e)
+void MenuState::handleEvent(const SDL_Event& e)
 {
 	switch(e.type) {
-		case sf::Event::KeyPressed:
-			switch(e.key.code) {
-				case sf::Keyboard::Escape:
+		case SDL_KEYUP:
+			switch(e.key.keysym.sym) {
+				case SDLK_ESCAPE:
 					StateManager::get().exit();
 				default: break;
 			}
